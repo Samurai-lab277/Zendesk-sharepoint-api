@@ -11,7 +11,7 @@ export default async function handler(req, res) {
       },
       body: new URLSearchParams({
         client_id: process.env.CLIENT_ID,
-        client_secret: process.env.CLIENT_SECRET``,
+        client_secret: process.env.CLIENT_SECRET,
         grant_type: "client_credentials",
         scope: "https://graph.microsoft.com/.default"
       })
