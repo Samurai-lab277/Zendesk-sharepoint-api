@@ -1,5 +1,5 @@
 export default async function handler(req, res) {
-  const { query } = req.body;
+const query = req.body?.query || "manual";
 
   // Step 1: Get Microsoft token
   const tokenRes = await fetch(
@@ -61,10 +61,13 @@ if (!data.value || !data.value[0]?.hitsContainers?.[0]?.hits) {
 }
 
 // Step 3: Clean results
-const results = data.value[0].hitsContainers[0].hits.map(hit => ({
-  name: hit.resource.name,
-  url: hit.resource.webUrl
-}));
+const results = data.value[0].hitsContainers[0].hits.map((hit) => {
+  return {
+    name: hit.resource.name,
+    url: hit.resource.webUrl
+  };
+});
+
 
 res.status(200).json({ results });
 ``
