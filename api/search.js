@@ -10,8 +10,8 @@ export default async function handler(req, res) {
         "Content-Type": "application/x-www-form-urlencoded"
       },
       body: new URLSearchParams({
-        client_id: "9c36a2ff-4005-4f54-a620-7e58386de032",
-        client_secret: "fVc8Q~JuXON7DtOKeUjHMkt5WMZLsPZvI2BFza~2",
+        client_id: process.env.CLIENT_ID,
+        client_secret: process.env.CLIENT_SECRET``,
         grant_type: "client_credentials",
         scope: "https://graph.microsoft.com/.default"
       })
