@@ -3,7 +3,7 @@ export default async function handler(req, res) {
     const query = req.body?.query || "manual";
 
     const tokenRes = await fetch(
-      `https://login.microsoftonline.com/201f1044-2f66-4605-9418-05871a6d9d05/oauth2/v2.0/token`,
+      `https://login.microsoftonline.com/${process.env.TENANT_ID}/oauth2/v2.0/token`,
       {
         method: "POST",
         headers: {
@@ -18,7 +18,17 @@ export default async function handler(req, res) {
       }
     );
 
-    const tokenData = await tokenRes.json();
+    const tokenText = await tokenRes.text();
+
+    let tokenData;
+    try {
+      tokenData = JSON.parse(tokenText);
+    } catch {
+      return res.status(500).json({
+        error: "Token parse failed",
+        raw: tokenText
+      });
+    }
 
     if (!tokenData.access_token) {
       return res.status(500).json({
@@ -48,7 +58,17 @@ export default async function handler(req, res) {
       }
     );
 
-    const data = await searchRes.json();
+    const searchText = await searchRes.text();
+
+    let data;
+    try {
+      data = JSON.parse(searchText);
+    } catch {
+      return res.status(500).json({
+        error: "Search parse failed",
+        raw: searchText
+      });
+    }
 
     if (!data.value || !data.value[0]?.hitsContainers?.[0]?.hits) {
       return res.status(200).json({
@@ -57,20 +77,18 @@ export default async function handler(req, res) {
       });
     }
 
-    const results = data.value[0].hitsContainers[0].hits.map((hit) => {
-      return {
-        name: hit.resource.name,
-        url: hit.resource.webUrl
-      };
-    });
+    const results = data.value[0].hitsContainers[0].hits.map((hit) => ({
+      name: hit.resource.name,
+      url: hit.resource.webUrl
+    }));
 
     return res.status(200).json({ results });
 
   } catch (err) {
     return res.status(500).json({
       error: "Crash",
-      message: err.message
+      message: err.message,
+      stack: err.stack
     });
   }
 }
-``
