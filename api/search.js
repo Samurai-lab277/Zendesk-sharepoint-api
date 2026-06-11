@@ -1,4 +1,9 @@
 export default async function handler(req, res) {
+  const secret = req.headers["x-api-key"];
+  if (secret !== process.env.API_SECRET) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
   try {
     const query = req.body?.query || "manual";
 
@@ -6,35 +11,22 @@ export default async function handler(req, res) {
       `https://login.microsoftonline.com/${process.env.TENANT_ID}/oauth2/v2.0/token`,
       {
         method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded"
-        },
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams({
           client_id: process.env.CLIENT_ID,
           client_secret: process.env.CLIENT_SECRET,
-          grant_type: "client_credentials",
-          scope: "https://graph.microsoft.com/.default"
+          grant_type: "password",
+          scope: "https://graph.microsoft.com/Files.Read Sites.Read.All User.Read",
+          username: process.env.SP_USERNAME,
+          password: process.env.SP_PASSWORD
         })
       }
     );
 
-    const tokenText = await tokenRes.text();
-
-    let tokenData;
-    try {
-      tokenData = JSON.parse(tokenText);
-    } catch {
-      return res.status(500).json({
-        error: "Token parse failed",
-        raw: tokenText
-      });
-    }
+    const tokenData = await tokenRes.json();
 
     if (!tokenData.access_token) {
-      return res.status(500).json({
-        error: "Token failed",
-        details: tokenData
-      });
+      return res.status(500).json({ error: "Token failed", details: tokenData });
     }
 
     const searchRes = await fetch(
@@ -46,38 +38,23 @@ export default async function handler(req, res) {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          requests: [
-            {
-              entityTypes: ["driveItem"],
-              query: {
-                queryString: query
-              }
-            }
-          ]
+          requests: [{
+            entityTypes: ["driveItem"],
+            query: { queryString: query },
+            contentSources: [`/sites/${process.env.SP_SITE_NAME}`]
+          }]
         })
       }
     );
 
-    const searchText = await searchRes.text();
+    const data = await searchRes.json();
 
-    let data;
-    try {
-      data = JSON.parse(searchText);
-    } catch {
-      return res.status(500).json({
-        error: "Search parse failed",
-        raw: searchText
-      });
+    const hits = data.value?.[0]?.hitsContainers?.[0]?.hits;
+    if (!hits) {
+      return res.status(200).json({ results: [] });
     }
 
-    if (!data.value || !data.value[0]?.hitsContainers?.[0]?.hits) {
-      return res.status(200).json({
-        results: [],
-        debug: data
-      });
-    }
-
-    const results = data.value[0].hitsContainers[0].hits.map((hit) => ({
+    const results = hits.map((hit) => ({
       name: hit.resource.name,
       url: hit.resource.webUrl
     }));
@@ -85,10 +62,6 @@ export default async function handler(req, res) {
     return res.status(200).json({ results });
 
   } catch (err) {
-    return res.status(500).json({
-      error: "Crash",
-      message: err.message,
-      stack: err.stack
-    });
+    return res.status(500).json({ error: "Crash", message: err.message });
   }
 }
