@@ -7,10 +7,10 @@ export default async function handler(req, res) {
     return res.status(200).end();
   }
 
-//  const secret = req.headers["x-api-key"];
- // if (secret !== process.env.API_SECRET) {
-  //  return res.status(401).json({ error: "Unauthorized" });
- // }
+const secret = req.headers["x-api-key"];
+ if (secret !== process.env.API_SECRET) {
+   return res.status(401).json({ error: "Unauthorized" });
+ }
 
   try {
     const query = req.body?.query || "manual";
