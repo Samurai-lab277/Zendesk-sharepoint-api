@@ -36,7 +36,8 @@ export default async function handler(req, res) {
         body: JSON.stringify({
           requests: [{
             entityTypes: ["driveItem"],
-            query: { queryString: query }
+            query: { queryString: query },
+            region: "EMEA"
           }]
         })
       }
