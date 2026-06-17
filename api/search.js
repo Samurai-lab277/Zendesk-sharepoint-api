@@ -36,9 +36,10 @@ export default async function handler(req, res) {
         body: JSON.stringify({
           requests: [{
             entityTypes: ["driveItem"],
-            query: { queryString: query },
-            region: "EMEA",
-            contentSources: ["/sites/DMS"] 
+            query: {
+              queryString: `${query} path:"https://schoucompany.sharepoint.com/sites/DMS/Product Documentation"`
+            },
+            region: "EMEA"
           }]
         })
       }
@@ -51,12 +52,12 @@ export default async function handler(req, res) {
       return res.status(200).json({ results: [], debug: data });
     }
 
-const results = hits
-  .filter((hit) => hit.resource.name.endsWith(".pdf"))
-  .map((hit) => ({
-    name: hit.resource.name,
-    url: hit.resource.webUrl
-  }));
+    const results = hits
+      .filter((hit) => hit.resource.name.endsWith(".pdf"))
+      .map((hit) => ({
+        name: hit.resource.name,
+        url: hit.resource.webUrl
+      }));
 
     return res.status(200).json({ results });
 
