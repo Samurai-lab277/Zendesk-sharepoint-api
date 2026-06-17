@@ -35,13 +35,12 @@ const tokenRes = await fetch(
           Authorization: `Bearer ${tokenData.access_token}`,
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({
-          requests: [{
-            entityTypes: ["driveItem"],
-            query: { queryString: query },
-            contentSources: [`/sites/${process.env.SP_SITE_NAME}`]
-          }]
-        })
+body: JSON.stringify({
+  requests: [{
+    entityTypes: ["driveItem"],
+    query: { queryString: query }
+  }]
+})
       }
     );
 
