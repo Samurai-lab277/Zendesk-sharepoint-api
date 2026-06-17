@@ -3,26 +3,24 @@ export default async function handler(req, res) {
   if (secret !== process.env.API_SECRET) {
     return res.status(401).json({ error: "Unauthorized" });
   }
-
   try {
     const query = req.body?.query || "manual";
 
-const tokenRes = await fetch(
-  `https://login.microsoftonline.com/${process.env.TENANT_ID}/oauth2/v2.0/token`,
-  {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({
-      client_id: process.env.CLIENT_ID,
-      client_secret: process.env.CLIENT_SECRET,
-      grant_type: "client_credentials",
-      scope: "https://graph.microsoft.com/.default"
-    })
-  }
-);
+    const tokenRes = await fetch(
+      `https://login.microsoftonline.com/${process.env.TENANT_ID}/oauth2/v2.0/token`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          client_id: process.env.CLIENT_ID,
+          client_secret: process.env.CLIENT_SECRET,
+          grant_type: "client_credentials",
+          scope: "https://graph.microsoft.com/.default"
+        })
+      }
+    );
 
     const tokenData = await tokenRes.json();
-
     if (!tokenData.access_token) {
       return res.status(500).json({ error: "Token failed", details: tokenData });
     }
@@ -35,20 +33,20 @@ const tokenRes = await fetch(
           Authorization: `Bearer ${tokenData.access_token}`,
           "Content-Type": "application/json"
         },
-body: JSON.stringify({
-  requests: [{
-    entityTypes: ["driveItem"],
-    query: { queryString: query }
-  }]
-})
+        body: JSON.stringify({
+          requests: [{
+            entityTypes: ["driveItem"],
+            query: { queryString: query }
+          }]
+        })
       }
     );
 
     const data = await searchRes.json();
-
     const hits = data.value?.[0]?.hitsContainers?.[0]?.hits;
+
     if (!hits) {
-      return res.status(200).json({ results: [] });
+      return res.status(200).json({ results: [], debug: data });
     }
 
     const results = hits.map((hit) => ({
