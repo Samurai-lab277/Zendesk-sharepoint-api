@@ -11,6 +11,7 @@ export default async function handler(req, res) {
   if (secret !== process.env.API_SECRET) {
     return res.status(401).json({ error: "Unauthorized" });
   }
+
   try {
     const query = req.body?.query || "manual";
 
@@ -60,16 +61,15 @@ export default async function handler(req, res) {
       return res.status(200).json({ results: [] });
     }
 
-const hits = data.value?.[0]?.hitsContainers?.[0]?.hits;
-
-if (!hits) {
-  return res.status(200).json({ results: [], debug: data });
-}
-
-return res.status(200).json({ results: hits.map((hit) => ({
-  name: hit.resource.name,
-  url: hit.resource.webUrl
-}))});
+    const results = hits
+      .filter((hit) => {
+        const name = hit.resource.name.toLowerCase();
+        return name.includes("manual") || name.includes("_man_");
+      })
+      .map((hit) => ({
+        name: hit.resource.name,
+        url: hit.resource.webUrl
+      }));
 
     return res.status(200).json({ results });
 
