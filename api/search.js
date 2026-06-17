@@ -61,10 +61,6 @@ export default async function handler(req, res) {
     }
 
     const results = hits
-      .filter((hit) => {
-        const name = hit.resource.name.toLowerCase();
-        return name.includes("manual") || name.includes("_man_");
-      })
       .map((hit) => ({
         name: hit.resource.name,
         url: hit.resource.webUrl
