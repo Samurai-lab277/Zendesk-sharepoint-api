@@ -7,21 +7,19 @@ export default async function handler(req, res) {
   try {
     const query = req.body?.query || "manual";
 
-    const tokenRes = await fetch(
-      `https://login.microsoftonline.com/${process.env.TENANT_ID}/oauth2/v2.0/token`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({
-          client_id: process.env.CLIENT_ID,
-          client_secret: process.env.CLIENT_SECRET,
-          grant_type: "password",
-          scope: "https://graph.microsoft.com/Files.Read Sites.Read.All User.Read",
-          username: process.env.SP_USERNAME,
-          password: process.env.SP_PASSWORD
-        })
-      }
-    );
+const tokenRes = await fetch(
+  `https://login.microsoftonline.com/${process.env.TENANT_ID}/oauth2/v2.0/token`,
+  {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      client_id: process.env.CLIENT_ID,
+      client_secret: process.env.CLIENT_SECRET,
+      grant_type: "client_credentials",
+      scope: "https://graph.microsoft.com/.default"
+    })
+  }
+);
 
     const tokenData = await tokenRes.json();
 
