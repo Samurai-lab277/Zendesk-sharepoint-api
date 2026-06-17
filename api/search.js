@@ -1,4 +1,12 @@
 export default async function handler(req, res) {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, x-api-key");
+
+  if (req.method === "OPTIONS") {
+    return res.status(200).end();
+  }
+
   const secret = req.headers["x-api-key"];
   if (secret !== process.env.API_SECRET) {
     return res.status(401).json({ error: "Unauthorized" });
@@ -49,18 +57,18 @@ export default async function handler(req, res) {
     const hits = data.value?.[0]?.hitsContainers?.[0]?.hits;
 
     if (!hits) {
-      return res.status(200).json({ results: [], debug: data });
+      return res.status(200).json({ results: [] });
     }
 
-const results = hits
-  .filter((hit) => {
-    const name = hit.resource.name.toLowerCase();
-    return name.includes("manual") || name.includes("_man_");
-  })
-  .map((hit) => ({
-    name: hit.resource.name,
-    url: hit.resource.webUrl
-  }));
+    const results = hits
+      .filter((hit) => {
+        const name = hit.resource.name.toLowerCase();
+        return name.includes("manual") || name.includes("_man_");
+      })
+      .map((hit) => ({
+        name: hit.resource.name,
+        url: hit.resource.webUrl
+      }));
 
     return res.status(200).json({ results });
 
