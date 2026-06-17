@@ -37,7 +37,8 @@ export default async function handler(req, res) {
           requests: [{
             entityTypes: ["driveItem"],
             query: { queryString: query },
-            region: "EMEA"
+            region: "EMEA",
+            contentSources: ["/sites/DMS"] 
           }]
         })
       }
@@ -50,10 +51,12 @@ export default async function handler(req, res) {
       return res.status(200).json({ results: [], debug: data });
     }
 
-    const results = hits.map((hit) => ({
-      name: hit.resource.name,
-      url: hit.resource.webUrl
-    }));
+const results = hits
+  .filter((hit) => hit.resource.name.endsWith(".pdf"))
+  .map((hit) => ({
+    name: hit.resource.name,
+    url: hit.resource.webUrl
+  }));
 
     return res.status(200).json({ results });
 
