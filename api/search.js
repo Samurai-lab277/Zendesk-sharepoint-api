@@ -7,11 +7,10 @@ export default async function handler(req, res) {
     return res.status(200).end();
   }
 
-  console.log("ALL HEADERS:", JSON.stringify(req.headers));
-//const secret = req.headers["x-api-key"];
- //if (secret !== process.env.API_SECRET) {
-   //return res.status(401).json({ error: "Unauthorized" });
- //}
+  const zdUser = req.headers["x-zendesk-user-id"];
+  if (!zdUser) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
 
   try {
     const query = req.body?.query || "manual";
